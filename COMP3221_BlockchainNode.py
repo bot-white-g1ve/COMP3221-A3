@@ -32,11 +32,11 @@ def node_list_type(node_list_file):
 
 def initialize_keypair():
     global private_key_bytes, public_key_bytes
-    private_key_bytes, public_key_bytes = crypto.generate_keypair()
+    private_key_bytes, public_key_bytes = crypto.generate_keypair_bytes()
     d_print("initialize keypair", f"generates private and public bytes: {private_key_bytes}, {public_key_bytes}")
     global public_key_hex
-    pubic_key_hex = crypto.publickey_bytes_to_hex(public_key_bytes)
-    d_print("initialize keypair", f"generates private and public bytes: {private_key_bytes}, {public_key_bytes}")
+    public_key_hex = crypto.publickey_bytes_to_hex(public_key_bytes)
+    d_print("initialize keypair", f"public key transformed to hex: {public_key_hex}")
 
 def server_thread(port):
     host_ip = socket.gethostbyname(socket.gethostname())
@@ -55,13 +55,6 @@ def server_thread(port):
     finally:
         server_socket.close()
 
-def cli_thread(node_list):
-    try:
-        while True:
-            pass
-    except KeyboardInterrupt:
-        d_print("server terminate")
-
 if __name__ == "__main__":
     d_print("main", f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
@@ -72,5 +65,6 @@ if __name__ == "__main__":
 
     d_print("main", "server start")
 
+    initialize_keypair()
 
     server_thread(args.port_server)

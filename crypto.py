@@ -29,7 +29,7 @@ def generate_keypair_bytes():
 
 def publickey_bytes_to_hex(public_key_bytes):
     # load public key from bytes
-    loaded_public_key = ed25519.Ed25519PublicKey.from_public_bytes(public_bytes)
+    loaded_public_key = ed25519.Ed25519PublicKey.from_public_bytes(public_key_bytes)
 
     # transform to hex
     public_key_hex = loaded_public_key.public_bytes(

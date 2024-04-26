@@ -1,0 +1,10 @@
+(In main) 2024-04-26 15:52:17
+(In main) server start
+(In main) 2024-04-26 15:59:48
+(In main) server start
+(In initialize keypair) generates private and public bytes: b'9~\x12{\t\r\x9b\xcb\x80\xcdt\xfdoMXKL\xac\xdf6\x0bk\x8f\xa1F;\t\x97\xdf\xd9t\xef', b'\xed\xfb\xfb\xab\xe4\x9f\x81\x03\x13\xd6d)\x19\xc1@\x80\xc4\xdc\xcc\xfb\nSn \xcc\xd6D=\xb8\xe7\xab\xcf'
+(In main) 2024-04-26 16:00:16
+(In main) server start
+(In initialize keypair) generates private and public bytes: b'z\xa0v]Xyd\xa6\xc2\x19;\xbc0\xef\xb4\xbe\xd7J\x81\xfe\xe2\x0cp 5\xf2"k}\xb7\xc9\xcc', b'\x9e\x8bF1\xe1\xebK\x94\xdb\xe7>\xf4\xb3\xfamQ\xbd\x1e\n\x01r\x955\x92o>#Qc\xed=_'
+(In initialize keypair) public key transformed to hex: 9e8b4631e1eb4b94dbe73ef4b3fa6d51bd1e0a01729535926f3e235163ed3d5f
+(In server_thread) find host_ip being 100.86.126.26
