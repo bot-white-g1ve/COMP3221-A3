@@ -1,0 +1,7 @@
+(In main) 2024-04-26 20:45:15
+(In main) server start
+(In initialize keypair) generates private and public bytes: b"+2\xa8\xb1%\xd8\xfc'\xba\xb3\t\x82XD\xac\xcd\x86\xf4\x90\xc4\xed\x80W\xef>c\xe8\xa1:\xaf(\xf7", b'\xd8Y\xc4\xaa\xa1\xdf\xee,\xb4\xb6B|\nR\x87&\x9d\xcf\x8fg\x17\x96\x08\xf9\x1e\x0bi\x1f\xf2\xe0D\xf3'
+(In initialize keypair) public key transformed to hex: d859c4aaa1dfee2cb4b6427c0a5287269dcf8f67179608f91e0b691ff2e044f3
+(In server_thread) find host_ip being 100.86.126.26
+(In server_thread) receive message:
+b'{"type": "transaction", "payload": {"sender": "a57819938feb51bb3f923496c9dacde3e9f667b214a0fb1653b6bfc0f185363b", "message": "hello", "nonce": 0, "signature": "142e395895e0bf4e4a3a7c3aabf2f59d80c517d24bb2d98a1a24384bc7cb29c9d593ce3063c5dd4f12ae9393f3345174485c052d0f5e87c082f286fd60c7fd0c"}}'

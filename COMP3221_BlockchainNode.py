@@ -51,7 +51,7 @@ def server_thread(port):
             message = network.recv_prefixed(client_socket)
             d_print("server_thread", f"receive message:\n{message}")
     except KeyboardInterrupt:
-        d_print("server terminate")
+        d_print("server_thread", "server terminate")
     finally:
         server_socket.close()
 

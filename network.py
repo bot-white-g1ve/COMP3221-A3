@@ -57,4 +57,4 @@ def send_transaction(address, msg: dict):
 	client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	host, port = address.split(':')
 	client_socket.connect((host, int(port)))
-	send_prefixed(socket, msg_bytes)
+	send_prefixed(client_socket, msg_bytes)
