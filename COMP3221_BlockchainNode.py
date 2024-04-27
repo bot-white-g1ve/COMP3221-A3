@@ -2,6 +2,8 @@ import argparse
 import network
 import crypto
 import socket
+import validation
+import json
 from datetime import datetime
 
 def d_print(func, str):
@@ -48,8 +50,28 @@ def server_thread(port):
     try:
         while True:
             client_socket, client_address = server_socket.accept()
-            message = network.recv_prefixed(client_socket)
+            message = network.recv_prefixed(client_socket).decode("utf-8")
+            message = json.loads(message)
             d_print("server_thread", f"receive message:\n{message}")
+            if validation.validate_message(message) == validation.ValidationError.INVALID_JSON:
+                d_print("server_thread", "A message with wrong format received")
+            elif validation.validate_message(message) == validation.ValidationError.INVALID_TYPE:
+                d_print("server_thread", "A message with wrong type received")
+            elif validation.validate_message(message) == validation.ValidationError.INVALID_SENDER:
+                d_print("server_thread", "A transaction with wrong sender received")
+            elif validation.validate_message(message) == validation.ValidationError.INVALID_MESSAGE:
+                d_print("server_thread", "A transaction with wrong message received")
+            elif validation.validate_message(message) == validation.ValidationError.INVALID_NONCE:
+                d_print("server_thread", "A transaction with wrong nonce received")
+            elif validation.validate_message(message) == validation.ValidationError.INVALID_SIGNATURE:
+                d_print("server_thread", "A transaction with wrong signature received")
+            elif validation.validate_message(message) == validation.ValidationError.INVALID_VALUES:
+                d_print("server_thread", "A block request with wrong values received")
+            elif validation.validate_message(message) == validation.ValidationError.VALID_TRANSACTION:
+                d_print("server_thread", "A valid transaction received")
+            elif validation.validate_message(message) == validation.ValidationError.VALID_REQUEST:
+                d_print("server_thread", "A valid block request received")
+            client_socket.close()
     except KeyboardInterrupt:
         d_print("server_thread", "server terminate")
     finally:
