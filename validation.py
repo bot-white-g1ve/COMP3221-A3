@@ -21,7 +21,28 @@ def validate_transaction(payload):
         return ValidationError.INVALID_NONCE
     # Validate signature
     if not isinstance(payload["signature"], str) or len(payload["signature"]) != 128:
+        d_print("validation.validate_transaction", "the signature is not a valid string")
         return ValidationError.INVALID_SIGNATURE
+    
+    # Use signature to verify the message
+    message_wo_sig = json.dumps({
+        "sender": payload["sender"],
+        "message": payload["message"],
+        "nonce": payload["nonce"]},
+        sort_keys=True)
+    message_wo_sig_bytes = message_wo_sig.encode()
+    signature_hex = payload["signature"]
+    signature_bytes = bytes.fromhex(signature_hex)
+
+    public_key_bytes = bytes.fromhex(payload["sender"])
+    public_key = ed25519.Ed25519PublicKey.from_public_bytes(public_key_bytes)
+
+    try:
+        public_key.verify(signature_bytes, message_wo_sig_bytes)
+    except Exception as e:
+        d_print("validation.validate_transaction", "the signature is not corresponding to the message")
+        return ValidationError.INVALID_SIGNATURE
+
     return ValidationError.VALID_TRANSACTION
 
 def validate_values(payload):
