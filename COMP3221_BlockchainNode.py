@@ -9,6 +9,7 @@ import blockchain
 import time 
 import struct
 import json
+import math
 
 def d_print(func, str):
     with open('debug.txt', 'a') as f:
@@ -37,35 +38,6 @@ def node_list_type(node_list_file):
         raise FileNotFoundError(f"node list file {node_list_file} is not found")
     return node_list
 
-
-
-def validate(message):
-    d_print("server_thread", f"receive message:\n{message}")
-    if validation.validate_message(message) == validation.ValidationError.INVALID_JSON:
-        d_print("server_thread", "A message with wrong format received")
-    elif validation.validate_message(message) == validation.ValidationError.INVALID_TYPE:
-        d_print("server_thread", "A message with wrong type received")
-    elif validation.validate_message(message) == validation.ValidationError.INVALID_SENDER:
-        d_print("server_thread", "A transaction with wrong sender received")
-    elif validation.validate_message(message) == validation.ValidationError.INVALID_MESSAGE:
-        d_print("server_thread", "A transaction with wrong message received")
-    elif validation.validate_message(message) == validation.ValidationError.INVALID_NONCE:
-        d_print("server_thread", "A transaction with wrong nonce received")
-    elif validation.validate_message(message) == validation.ValidationError.INVALID_SIGNATURE:
-        d_print("server_thread", "A transaction with wrong signature received")
-    elif validation.validate_message(message) == validation.ValidationError.INVALID_VALUES:
-        d_print("server_thread", "A block request with wrong values received")
-
-    elif validation.validate_message(message) == validation.ValidationError.VALID_TRANSACTION:
-        d_print("server_thread", "A valid transaction received")
-        return 1
-    elif validation.validate_message(message) == validation.ValidationError.VALID_REQUEST:
-        d_print("server_thread", "A valid block request received")
-        return 2
-    
-    return 0
-
-
 def initialize_keypair():
     global private_key_bytes, public_key_bytes
     private_key_bytes, public_key_bytes = crypto.generate_keypair_bytes()
@@ -73,6 +45,32 @@ def initialize_keypair():
     global public_key_hex
     public_key_hex = crypto.publickey_bytes_to_hex(public_key_bytes)
     d_print("initialize keypair", f"public key transformed to hex: {public_key_hex}")
+
+
+def validate(message):
+    d_print("server_thread", f"receive message:\n{message}")
+
+    error = validation.validate_message(message)
+    if  error == validation.ValidationError.INVALID_JSON:
+        d_print("server_thread", "A message with wrong format received")
+        return "wrong format"
+    
+    if error == validation.ValidationError.VALID_TRANSACTION:
+        d_print("server_thread", "A valid transaction received")
+        return "valid transaction"
+    
+    elif error == validation.ValidationError.VALID_REQUEST:
+        d_print("server_thread", "A valid block request received")
+        return "valid block request"
+    
+    elif error == validation.ValidationError.INVALID_VALUES:
+        d_print("server_thread", "A invalid block request received")
+        return "invalid block request"
+
+    else:
+        d_print("server_thread", "A invalid transaction received")
+        return "invalid transaction"
+    
 
 def handle_client_connection(client_socket):
     try:
@@ -87,19 +85,30 @@ def handle_client_connection(client_socket):
 
             print(f"Received message: {message}")
             
-            # tranasctions
-            if validate(message) == 1:
-                print(bc.blockchain[-1])
-                bc.add_transaction(message)
-                bc.new_block()
-                print(bc.blockchain[-1])
-                
-                
-            elif validate(message) == 2:
-              pass
+            response_validation = validate(message)
 
-            else:
-                print("Invalid message received")
+            if  response_validation == "valid transaction":
+
+                # send response
+                response = json.dumps({"response": True})
+                client_socket.sendall(struct.pack("!H", len(response)) + response.encode())
+
+                # add to the pool
+                bc.add_transaction(message)
+                print(bc.blockchain[-1])
+                
+            elif response_validation == "invalid transaction":
+                response = json.dumps({"response": False})
+                client_socket.sendall(struct.pack("!H", len(response)) + response.encode())
+                
+            elif response_validation == "valid block request":
+                print("valid block request")
+                # send a singal to trigger consensus
+                # passive_active = True
+                print(message)
+                
+            elif response == "invalid block request":
+                pass
 
     finally:
         client_socket.close()
@@ -127,8 +136,7 @@ def manage_connection(host, port):
             while True:
                 time.sleep(10)
         except socket.error as e:
-            pass
-            # print(f"Error connecting to {host}:{port}: {e}")
+            print(f"Error connecting to {host}:{port}: {e}")
         finally:
             if sock:
                 with connections_lock:
@@ -141,19 +149,85 @@ def start_client(node_list):
     for host, port in node_list:
         threading.Thread(target=manage_connection, args=(host, port)).start()
 
-def broadcast_message(message):
+
+
+#-------------------------------------------------------------
+
+
+def perform_consensus(proposed_block,index):
+    # consensus_values = {proposed_block}
+
+    for k in range(max_failures + 1):
+        # Broadcast current values to all other nodes
+        broadcast_block_request(index)
+
+    #     # Receive values from other nodes
+    #     for conn in connections:
+    #         # receive value 
+    #         received_values = network.recv_prefixed(conn)
+    #         consensus_values.update(received_values)
+    
+    # # After f + 1 rounds, decide on the minimum value
+    # agreed_value = min(consensus_values)
+    # return agreed_value
+
+def consensus_pipeline():
+    while True:
+        # Check if the transaction pool is ready
+        if not bc.pool and not passive_active:
+            time.sleep(1) 
+            continue
+
+        if passive_active:
+            proposal = bc.new_block_proposal
+            print("perform consensus as case 2")
+            exit(1)
+
+
+        elif bc.pool:
+            proposal = bc.new_block_proposal()
+            print(f"start proposal with index {proposal,proposal['index']}")
+            print(connections)
+            perform_consensus(proposal,proposal['index'])
+            # after execute
+            # bc.pop(0)
+            exit(1)
+
+        # also consider other case
+        
+
+        
+
+        # Reset the connection timeout for active nodes
+        # reset_node_timeouts()
+
+
+def broadcast_block_request(index):
     """Sends a message to all connected nodes."""
     with connections_lock:
         for sock in connections:
             try:
-                sock.sendall(message.encode())
-            except socket.error as e:
-                 print(f"Error sending message to {sock.getpeername()}: {e}")
+                message = {"type": "values","payload":index }
+                msg_str = json.dumps(message)
+                msg_bytes = msg_str.encode('utf8')
+                network.send_prefixed(sock, msg_bytes)
+                print
+            except Exception as e:
+                print(f"Error broadcasting message: {e}")
             
 
+
+def reset_node_timeouts():
+    """Reset timeouts for all active nodes."""
+    with connections_lock:
+        for sock in connections:
+            sock.settimeout(None)
+
+# --------------------------------------------------------
 def start_node(server_port, node_list):
     threading.Thread(target=start_server, args=(server_port,)).start()
     start_client(node_list)
+    threading.Thread(target=consensus_pipeline, daemon=True).start()
 
 
 if __name__ == "__main__":
@@ -164,6 +238,10 @@ if __name__ == "__main__":
     parser.add_argument('node_list', type=node_list_type, help='Port number')
     args = parser.parse_args()
     print(args.node_list)
+
+    max_failures = math.ceil(len(args.node_list)+1) - 1
+
+    passive_active = False
 
     d_print("main", "server start")
 

@@ -68,4 +68,5 @@ def validate_message(message):
         return validate_transaction(payload)
     elif message_type == "values":
         return validate_values(payload)
+    
     return ValidationError.INVALID_JSON

@@ -10,7 +10,7 @@ class Blockchain:
     def create_genesis_block(self):
         # Initialize the genesis block
         genesis_block = {
-            'index': 1,
+            'index': 0,
             'transactions': [],
             'previous_hash': '0' * 64,
             'current_hash': None
@@ -18,15 +18,16 @@ class Blockchain:
         genesis_block['current_hash'] = self.calculate_hash(genesis_block)
         self.blockchain.append(genesis_block)
 
-    def new_block(self, previous_hash=None):
+    def new_block_proposal(self):
         block = {
-            'index': len(self.blockchain) + 1,
+            'index': len(self.blockchain),
             'transactions': self.pool.copy(),
-            'previous_hash': previous_hash or self.blockchain[-1]['current_hash'],
+            'previous_hash': self.blockchain[-1]['current_hash']
         }
         block['current_hash'] = self.calculate_hash(block)
-        self.pool = []
-        self.blockchain.append(block)
+        print(block)
+
+        return block
 
     def last_block(self):
         return self.blockchain[-1]
@@ -39,5 +40,5 @@ class Blockchain:
         return hex_hash
 
     def add_transaction(self, transaction: dict):
-        self.pool.append(transaction)
+        self.pool.append(transaction['payload'])
     
