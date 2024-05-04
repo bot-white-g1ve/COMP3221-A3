@@ -103,9 +103,18 @@ def handle_client_connection(client_socket):
                 
             elif response_validation == "valid block request":
                 print("valid block request")
+                proposal =  bc.new_block_proposal()
+
+                try:
+                    message = proposal
+                    msg_str = json.dumps(message)
+                    msg_bytes = msg_str.encode('utf8')
+                    network.send_prefixed(client_socket, msg_bytes)
+                except Exception as e:
+                    print(f"Error broadcasting message: {e}")
+
                 # send a singal to trigger consensus
                 # passive_active = True
-                print(message)
                 
             elif response == "invalid block request":
                 pass
@@ -155,17 +164,18 @@ def start_client(node_list):
 
 
 def perform_consensus(proposed_block,index):
-    # consensus_values = {proposed_block}
+    consensus_values = {proposed_block}
 
     for k in range(max_failures + 1):
         # Broadcast current values to all other nodes
         broadcast_block_request(index)
 
-    #     # Receive values from other nodes
-    #     for conn in connections:
-    #         # receive value 
-    #         received_values = network.recv_prefixed(conn)
-    #         consensus_values.update(received_values)
+        # Receive values from other nodes
+        for conn in connections:
+            # receive value 
+            received_values = network.recv_prefixed(conn)
+            consensus_values.update(received_values)
+
     
     # # After f + 1 rounds, decide on the minimum value
     # agreed_value = min(consensus_values)
@@ -174,11 +184,11 @@ def perform_consensus(proposed_block,index):
 def consensus_pipeline():
     while True:
         # Check if the transaction pool is ready
-        if not bc.pool and not passive_active:
+        if not bc.pool and not consensus_routine:
             time.sleep(1) 
             continue
 
-        if passive_active:
+        if consensus_routine:
             proposal = bc.new_block_proposal
             print("perform consensus as case 2")
             exit(1)
@@ -186,12 +196,15 @@ def consensus_pipeline():
 
         elif bc.pool:
             proposal = bc.new_block_proposal()
-            print(f"start proposal with index {proposal,proposal['index']}")
-            print(connections)
+            print(f"start proposal with index {proposal['index']}")
             perform_consensus(proposal,proposal['index'])
+
             # after execute
-            # bc.pop(0)
-            exit(1)
+            bc.pool.pop(0)
+        
+            
+            print("FINISHED CONSENUS")
+
 
         # also consider other case
         
@@ -211,7 +224,6 @@ def broadcast_block_request(index):
                 msg_str = json.dumps(message)
                 msg_bytes = msg_str.encode('utf8')
                 network.send_prefixed(sock, msg_bytes)
-                print
             except Exception as e:
                 print(f"Error broadcasting message: {e}")
             
@@ -241,7 +253,7 @@ if __name__ == "__main__":
 
     max_failures = math.ceil(len(args.node_list)+1) - 1
 
-    passive_active = False
+    consensus_routine = False
 
     d_print("main", "server start")
 
