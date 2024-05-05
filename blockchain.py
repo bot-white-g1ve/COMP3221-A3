@@ -25,9 +25,10 @@ class Blockchain:
             'previous_hash': self.blockchain[-1]['current_hash']
         }
         block['current_hash'] = self.calculate_hash(block)
-        print(block)
+        print(f"new proposal: {block} \n")
 
         return block
+
 
     def last_block(self):
         return self.blockchain[-1]
