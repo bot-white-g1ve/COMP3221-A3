@@ -13,8 +13,7 @@ import math
 
 port = 0
 
-
-def d_print(func, str,port):
+def d_print(func, str):
     with open(f'debug_for_{port}.txt', 'a') as f:
         f.write(f"(In {func}) {str}\n")
 
@@ -37,41 +36,41 @@ def node_list_type(node_list_file):
                 ip, port = node.split(":")
                 node_list.append((ip,int(port)))
     except FileNotFoundError:
-        d_print("node_list_type", f"node list file {node_list_file} is not found",port)
+        d_print("node_list_type", f"node list file {node_list_file} is not found")
         raise FileNotFoundError(f"node list file {node_list_file} is not found")
     return node_list
 
 def initialize_keypair():
     global private_key_bytes, public_key_bytes
     private_key_bytes, public_key_bytes = crypto.generate_keypair_bytes()
-    d_print("initialize keypair", f"generates private and public bytes: {private_key_bytes}, {public_key_bytes}",port)
+    d_print("initialize keypair", f"generates private and public bytes: {private_key_bytes}, {public_key_bytes}")
     global public_key_hex
     public_key_hex = crypto.publickey_bytes_to_hex(public_key_bytes)
-    d_print("initialize keypair", f"public key transformed to hex: {public_key_hex}",port)
+    d_print("initialize keypair", f"public key transformed to hex: {public_key_hex}")
 
 
 def validate(message):
-    d_print("server_thread", f"receive message:\n{message}",port)
+    d_print("server_thread", f"receive message:\n{message}")
 
     error = validation.validate_message(message)
     if  error == validation.ValidationError.INVALID_JSON:
-        d_print("server_thread", "A message with wrong format received",port)
+        d_print("server_thread", "A message with wrong format received")
         return "wrong format"
     
     if error == validation.ValidationError.VALID_TRANSACTION:
-        d_print("server_thread", "A valid transaction received",port)
+        d_print("server_thread", "A valid transaction received")
         return "valid transaction"
     
     elif error == validation.ValidationError.VALID_REQUEST:
-        d_print("server_thread", "A valid block request received",port)
+        d_print("server_thread", "A valid block request received")
         return "valid block request"
     
     elif error == validation.ValidationError.INVALID_VALUES:
-        d_print("server_thread", "A invalid block request received",port)
+        d_print("server_thread", "A invalid block request received")
         return "invalid block request"
 
     else:
-        d_print("server_thread", "A invalid transaction received",port)
+        d_print("server_thread", "A invalid transaction received")
         return "invalid transaction"
     
 
@@ -86,7 +85,7 @@ def handle_client_connection(client_socket):
             message = network.recv_exact(client_socket,length)
             message = json.loads(message)
 
-            d_print("client received",f"Received message: {message}",port)
+            d_print("client received",f"Received message: {message}")
             
             response_validation = validate(message)
 
@@ -100,7 +99,7 @@ def handle_client_connection(client_socket):
                 # add to the pool
                 print(f"[PROPOSAL] Created a block proposal: {message}\n")
                 bc.add_transaction(message)
-                d_print("current end of blcokchain: \n", bc.blockchain[-1],port)
+                d_print("current end of blcokchain: \n", bc.blockchain[-1])
                 
             elif response_validation == "invalid transaction":
                 response = json.dumps({"response": False})
@@ -154,6 +153,7 @@ def handle_client_connection(client_socket):
     finally:
         client_socket.close()
 
+# Listening (server) socket
 def start_server(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         server_socket.bind(('0.0.0.0', port))
@@ -213,7 +213,7 @@ def perform_consensus(proposed_block,index):
             message = network.recv_exact(conn,length)
             message = json.loads(message)
 
-            d_print("client received",f"Received message: {message}",port)
+            d_print("client received",f"Received message: {message}")
 
             print(f"[Test]received one value: {message}")
             for block in message:
@@ -221,7 +221,7 @@ def perform_consensus(proposed_block,index):
                     consensus_values.append(block)
 
 
-    d_print("[CONSENSUS]", f"consensus value is {consensus_values}\n",port)
+    d_print("[CONSENSUS]", f"consensus value is {consensus_values}\n")
 
     # After f + 1 rounds, decide on the minimum value
     filtered_list = [item for item in consensus_values if item.get('transactions')]
@@ -327,7 +327,6 @@ if __name__ == "__main__":
     consensus_lock = threading.Lock()
 
     # testing
-    d_print("main", "server start",port)
-    d_print("main", "block chain initialize",port)
+    d_print("main", "server start")
 
     start_node(args.port_server,args.node_list)
