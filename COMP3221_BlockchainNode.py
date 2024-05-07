@@ -3,19 +3,17 @@ import network
 import crypto
 import socket
 import validation
-from datetime import datetime
 import threading
 import blockchain
 import time 
 import struct
 import json
 import math
+from debug import d_initial, d_print
 
 port = 0
 
-def d_print(func, str):
-    with open(f'debug_for_{port}.txt', 'a') as f:
-        f.write(f"(In {func}) {str}\n")
+
 
 def port_server_type(port_server):
     '''
@@ -50,27 +48,27 @@ def initialize_keypair():
 
 
 def validate(message):
-    d_print("server_thread", f"receive message:\n{message}")
+    d_print("validate", f"receive message:{message}")
 
     error = validation.validate_message(message)
     if  error == validation.ValidationError.INVALID_JSON:
-        d_print("server_thread", "A message with wrong format received")
+        d_print("validate", "A message with wrong format received")
         return "wrong format"
     
     if error == validation.ValidationError.VALID_TRANSACTION:
-        d_print("server_thread", "A valid transaction received")
+        d_print("validate", "A valid transaction received")
         return "valid transaction"
     
     elif error == validation.ValidationError.VALID_REQUEST:
-        d_print("server_thread", "A valid block request received")
+        d_print("validate", "A valid block request received")
         return "valid block request"
     
     elif error == validation.ValidationError.INVALID_VALUES:
-        d_print("server_thread", "A invalid block request received")
+        d_print("validate", "A invalid block request received")
         return "invalid block request"
 
     else:
-        d_print("server_thread", "A invalid transaction received")
+        d_print("validate", "A invalid transaction received")
         return "invalid transaction"
     
 
@@ -85,21 +83,23 @@ def handle_client_connection(client_socket):
             message = network.recv_exact(client_socket,length)
             message = json.loads(message)
 
-            d_print("client received",f"Received message: {message}")
+            d_print("handle_client_connection",f"From {client_socket.getpeername()}, Received message: {message}")
             
             response_validation = validate(message)
 
             if  response_validation == "valid transaction":
                 print(f"[NET] Received a transaction from node {client_socket.getpeername()}: {message['payload']}\n")
+    
+                d_print("handle_client_connection", f"The received message is a transaction")
 
                 # send response
                 response = json.dumps({"response": True})
                 client_socket.sendall(struct.pack("!H", len(response)) + response.encode())
 
                 # add to the pool
-                print(f"[PROPOSAL] Created a block proposal: {message}\n")
+                d_print("handle_client_connection", f"Created a block proposal: {message}")
                 bc.add_transaction(message)
-                d_print("current end of blcokchain: \n", bc.blockchain[-1])
+                d_print("handle_client_connection", f"current end of blcokchain: {bc.blockchain[-1]}")
                 
             elif response_validation == "invalid transaction":
                 response = json.dumps({"response": False})
@@ -110,7 +110,7 @@ def handle_client_connection(client_socket):
                 request_index = message['payload']
                 agreement_index = bc.blockchain[-1]['index']
         
-                print(f"[BLOCK] Received a block request from node {client_socket.getpeername()}: {request_index}\n")
+                d_print("handle_client_connection", f"The received message is a block request")
 
                 global consensus_routine
                 global consensus_values
@@ -118,25 +118,25 @@ def handle_client_connection(client_socket):
                 # invalid index
                 if request_index < 0 or request_index > agreement_index+1:
                     proposal = {}
-                    print("very wrong!!!")
+                    d_print("handle_client_connection", f"The received block request's request index is wrong in case1")
                 
                 # index already agreed
                 elif request_index <= agreement_index:
                     proposal = [bc.blockchain[request_index]]
-                    print("request is already complete")
+                    d_print("handle_client_connection", f"The received block request's request index is wrong in case2")
 
                 # consensus process
                 elif request_index == agreement_index+1:
                     # Start consensus
                     if not consensus_values:
                         proposal =  [bc.new_block_proposal()]
-                        print("new consenus started!")
+                        d_print("handle_client_connection", "new consenus started!")
                         consensus_routine = True
 
                     # During consensus
                     elif consensus_values:
                         proposal = consensus_values
-                        print("consensus is going on!") 
+                        d_print("handle_client_connection", "consensus is going on!") 
 
                 try:
                     message = proposal
@@ -156,14 +156,17 @@ def handle_client_connection(client_socket):
 # Listening (server) socket
 def start_server(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
-        server_socket.bind(('0.0.0.0', port))
+        host_ip = socket.gethostbyname(socket.gethostname())
+        d_print("start_server", f"find host_ip being {host_ip}")
+        server_socket.bind((host_ip, port))
         server_socket.listen()
-        print(f"Server listening on port {port}...\n\n")
+        d_print("start_server", f"Server listening on host {host_ip}, port {port}")
         
         while True:
             client_socket, address = server_socket.accept()
-            print(f"Accepted connection from {address}\n")
+            d_print("start_server", f"Accepted connection from {address}")
             threading.Thread(target=handle_client_connection, args=(client_socket,)).start()
+
 
 def manage_connection(host, port):
     while True:
@@ -178,7 +181,7 @@ def manage_connection(host, port):
                 time.sleep(10)
 
         except socket.error as e:
-            # print(f"Error connecting to {host}:{port}: {e}")
+            d_print("manage_connection", f"Error connecting to {host}:{port}: {e}")
             pass
 
         finally:
@@ -189,6 +192,7 @@ def manage_connection(host, port):
                 sock.close()
             time.sleep(5)
 
+# Create a 
 def start_client(node_list):
     for host, port in node_list:
         threading.Thread(target=manage_connection, args=(host, port)).start()
@@ -213,15 +217,14 @@ def perform_consensus(proposed_block,index):
             message = network.recv_exact(conn,length)
             message = json.loads(message)
 
-            d_print("client received",f"Received message: {message}")
+            d_print("perform_consensus",f"Received message: {message}")
 
-            print(f"[Test]received one value: {message}")
             for block in message:
                 if block not in consensus_values:
                     consensus_values.append(block)
 
 
-    d_print("[CONSENSUS]", f"consensus value is {consensus_values}\n")
+    d_print("perform_consensus", f"consensus value is {consensus_values}\n")
 
     # After f + 1 rounds, decide on the minimum value
     filtered_list = [item for item in consensus_values if item.get('transactions')]
@@ -232,17 +235,19 @@ def perform_consensus(proposed_block,index):
     # clear the consensus values 
     consensus_values = []
 
-
+# Keep checking if the pool is ready and perform corresponding operations
 def consensus_pipeline():
     global consensus_routine
     while True:
+        time.sleep(2)
+        
         # Check if the transaction pool is ready
 
         if not bc.pool and not consensus_routine:
             continue
         
         if consensus_routine:
-            print("perform consensus as case 2: \n")
+            d_print("consensus_pipeline", "perform consensus as case 2: ")
 
             proposal = bc.new_block_proposal()
 
@@ -254,7 +259,7 @@ def consensus_pipeline():
 
         elif bc.pool:
 
-            print("perform consensus as case 1: \n")
+            d_print("consensus_pipeline", "perform consensus as case 1: ")
 
             proposal = bc.new_block_proposal()
 
@@ -290,7 +295,7 @@ def reset_node_timeouts():
             sock.settimeout(None)
 
 
-
+# initialize every thread
 def start_node(server_port, node_list):
     threading.Thread(target=start_server, args=(server_port,)).start()
     start_client(node_list)
@@ -304,14 +309,14 @@ if __name__ == "__main__":
 
     # config 
     args = parser.parse_args()
-    max_failures = math.ceil((len(args.node_list)+1)/2) - 1
-
-    print("\nConfig: ")
-    print(f"node file is following : {args.node_list}")
-    print(f"max failures allowed : {max_failures}")
 
     # global variables
     port = args.port_server
+    d_initial(port)
+    
+    max_failures = math.ceil((len(args.node_list)+1)/2) - 1
+    d_print("main", f"node file is: {args.node_list}")
+    d_print("main", f"max failures allowed : {max_failures}")
 
     consensus_routine = False
     consensus_values = []
