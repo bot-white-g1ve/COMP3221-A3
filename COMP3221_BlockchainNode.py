@@ -46,7 +46,7 @@ def initialize_keypair():
     public_key_hex = crypto.publickey_bytes_to_hex(public_key_bytes)
     d_print("initialize keypair", f"public key transformed to hex: {public_key_hex}")
 
-
+# Call validation functions and print out the outcome
 def validate(message):
     d_print("validate", f"receive message:{message}")
 
@@ -54,23 +54,39 @@ def validate(message):
     if  error == validation.ValidationError.INVALID_JSON:
         d_print("validate", "A message with wrong format received")
         return "wrong format"
+    elif error == validation.ValidationError.INVALID_TYPE:
+        d_print("validate", "A message with wrong type received")
+        return "wrong format"
     
     if error == validation.ValidationError.VALID_TRANSACTION:
         d_print("validate", "A valid transaction received")
         return "valid transaction"
+    elif error == validation.ValidationError.INVALID_SENDER:
+        d_print("validate", "A transaction with wrong sender received")
+        print(f"[TX] Received an invalid transaction, wrong sender - {message['payload']}")
+        return "invalid transaction"
+    elif error == validation.ValidationError.INVALID_MESSAGE:
+        d_print("validate", "A transaction with wrong message received")
+        print(f"[TX] Received an invalid transaction, wrong message - {message['payload']}")
+        return "invalid transaction"
+    elif error == validation.ValidationError.INVALID_NONCE:
+        d_print("validate", "A transaction with wrong nonce received")
+        print(f"[TX] Received an invalid transaction, wrong nonce - {message['payload']}")
+        return "invalid transaction"
+    elif error == validation.ValidationError.INVALID_SIGNATURE:
+        d_print("validate", "A transaction with wrong signature received")
+        print(f"[TX] Received an invalid transaction, wrong signature mssage - {message['payload']}")
+        return "invalid transaction"
     
-    elif error == validation.ValidationError.VALID_REQUEST:
+    if error == validation.ValidationError.VALID_REQUEST:
         d_print("validate", "A valid block request received")
         return "valid block request"
-    
     elif error == validation.ValidationError.INVALID_VALUES:
         d_print("validate", "A invalid block request received")
         return "invalid block request"
 
-    else:
-        d_print("validate", "A invalid transaction received")
-        return "invalid transaction"
-    
+    d_print("validate", "Unknown error")
+    return "wrong format"
 
 def handle_client_connection(client_socket):
     try:
@@ -88,7 +104,7 @@ def handle_client_connection(client_socket):
             response_validation = validate(message)
 
             if  response_validation == "valid transaction":
-                print(f"[NET] Received a transaction from node {client_socket.getpeername()}: {message['payload']}\n")
+                print(f"[NET] Received a transaction from node {client_socket.getpeername()}: {message['payload']}")
     
                 d_print("handle_client_connection", f"The received message is a transaction")
 
@@ -97,8 +113,9 @@ def handle_client_connection(client_socket):
                 client_socket.sendall(struct.pack("!H", len(response)) + response.encode())
 
                 # add to the pool
-                d_print("handle_client_connection", f"Created a block proposal: {message}")
+                d_print("handle_client_connection", f"Add to transaction pool: {message}")
                 bc.add_transaction(message)
+                print(f"[MEM] Stored transaction in the transaction pool: {message['payload']['signature']}")
                 d_print("handle_client_connection", f"current end of blcokchain: {bc.blockchain[-1]}")
                 
             elif response_validation == "invalid transaction":
@@ -115,6 +132,7 @@ def handle_client_connection(client_socket):
                 global consensus_routine
                 global consensus_values
 
+                d_print("handle_client_connection", f"the request index is {request_index}, the agreed index is {agreement_index}")
                 # invalid index
                 if request_index < 0 or request_index > agreement_index+1:
                     proposal = {}
@@ -192,7 +210,7 @@ def manage_connection(host, port):
                 sock.close()
             time.sleep(5)
 
-# Create a 
+# Create a thread for each client
 def start_client(node_list):
     for host, port in node_list:
         threading.Thread(target=manage_connection, args=(host, port)).start()
@@ -224,7 +242,7 @@ def perform_consensus(proposed_block,index):
                     consensus_values.append(block)
 
 
-    d_print("perform_consensus", f"consensus value is {consensus_values}\n")
+    d_print("perform_consensus", f"consensus value is {consensus_values}")
 
     # After f + 1 rounds, decide on the minimum value
     filtered_list = [item for item in consensus_values if item.get('transactions')]
@@ -250,7 +268,7 @@ def consensus_pipeline():
             d_print("consensus_pipeline", "perform consensus as case 2: ")
 
             proposal = bc.new_block_proposal()
-
+            
             perform_consensus(proposal,proposal['index'])
 
             with consensus_lock:
@@ -262,7 +280,7 @@ def consensus_pipeline():
             d_print("consensus_pipeline", "perform consensus as case 1: ")
 
             proposal = bc.new_block_proposal()
-
+            print(f"[PROPOSAL] Created a block proposal: {proposal}")
             perform_consensus(proposal,proposal['index'])
 
             bc.pool.pop(0)

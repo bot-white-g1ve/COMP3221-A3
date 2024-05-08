@@ -1,0 +1,42 @@
+
+(In initializing) 2024-05-07 12:00:34.576038
+(In initializing) bind to port 5001
+(In main) node file is: [('100.86.126.26', 5000), ('100.86.126.26', 5002)]
+(In main) max failures allowed : 1
+(In initialize keypair) generates private and public bytes: b"\xfe\x82\xc5EOU'I\x8f o\x83B\x8e3\xf1\x11\xa0?D\xe2\xdfr\xb0\x8f$d\xeb\xb6\xc7\x88}", b'\xd8\x16"\xe9\x1a\xde\x0fP\x19IG\xa2\xd8\xcc8\xa7\x91\xf3|\xc76#\xb8\xee7k\x0b\x16Ge\xa8~'
+(In initialize keypair) public key transformed to hex: d81622e91ade0f50194947a2d8cc38a791f37cc73623b8ee376b0b164765a87e
+(In main) server start
+(In start_server) find host_ip being 100.86.126.26
+(In start_server) Server listening on host 100.86.126.26, port 5001
+(In start_server) Accepted connection from ('100.86.126.26', 29541)
+(In start_server) Accepted connection from ('100.86.126.26', 29546)
+(In handle_client_connection) From ('100.86.126.26', 29541), Received message: {'type': 'values', 'payload': 1}
+(In validate) receive message:{'type': 'values', 'payload': 1}
+(In validate) A valid block request received
+(In handle_client_connection) The received message is a block request
+(In handle_client_connection) the request index is 1, the agreed index is 0
+(In handle_client_connection) new consenus started!
+(In handle_client_connection) From ('100.86.126.26', 29541), Received message: {'type': 'values', 'payload': 1}
+(In validate) receive message:{'type': 'values', 'payload': 1}
+(In validate) A valid block request received
+(In handle_client_connection) The received message is a block request
+(In handle_client_connection) the request index is 1, the agreed index is 0
+(In handle_client_connection) new consenus started!
+(In consensus_pipeline) perform consensus as case 2: 
+(In perform_consensus) Received message: [{'index': 1, 'transactions': [{'sender': 'a57819938feb51bb3f923496c9dacde3e9f667b214a0fb1653b6bfc0f185363b', 'message': 'hello', 'nonce': 0, 'signature': '142e395895e0bf4e4a3a7c3aabf2f59d80c517d24bb2d98a1a24384bc7cb29c9d593ce3063c5dd4f12ae9393f3345174485c052d0f5e87c082f286fd60c7fd0c'}], 'previous_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941', 'current_hash': '99d708e1c447bf022b1917ddd9416873d16b4797ad261dd66b1608d010f38dfb'}]
+(In perform_consensus) Received message: [{'index': 1, 'transactions': [], 'previous_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941', 'current_hash': 'f17b364e002a2cf69cf5ce700fa7e63274a61addff2748e893b83d6613e914e6'}]
+(In perform_consensus) Received message: [{'index': 1, 'transactions': [{'sender': 'a57819938feb51bb3f923496c9dacde3e9f667b214a0fb1653b6bfc0f185363b', 'message': 'hello', 'nonce': 0, 'signature': '142e395895e0bf4e4a3a7c3aabf2f59d80c517d24bb2d98a1a24384bc7cb29c9d593ce3063c5dd4f12ae9393f3345174485c052d0f5e87c082f286fd60c7fd0c'}], 'previous_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941', 'current_hash': '99d708e1c447bf022b1917ddd9416873d16b4797ad261dd66b1608d010f38dfb'}]
+(In perform_consensus) Received message: [{'index': 1, 'transactions': [], 'previous_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941', 'current_hash': 'f17b364e002a2cf69cf5ce700fa7e63274a61addff2748e893b83d6613e914e6'}]
+(In perform_consensus) consensus value is [{'index': 1, 'transactions': [], 'previous_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941', 'current_hash': 'f17b364e002a2cf69cf5ce700fa7e63274a61addff2748e893b83d6613e914e6'}, {'index': 1, 'transactions': [{'sender': 'a57819938feb51bb3f923496c9dacde3e9f667b214a0fb1653b6bfc0f185363b', 'message': 'hello', 'nonce': 0, 'signature': '142e395895e0bf4e4a3a7c3aabf2f59d80c517d24bb2d98a1a24384bc7cb29c9d593ce3063c5dd4f12ae9393f3345174485c052d0f5e87c082f286fd60c7fd0c'}], 'previous_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941', 'current_hash': '99d708e1c447bf022b1917ddd9416873d16b4797ad261dd66b1608d010f38dfb'}]
+(In handle_client_connection) From ('100.86.126.26', 29546), Received message: {'type': 'values', 'payload': 1}
+(In validate) receive message:{'type': 'values', 'payload': 1}
+(In validate) A valid block request received
+(In handle_client_connection) The received message is a block request
+(In handle_client_connection) the request index is 1, the agreed index is 1
+(In handle_client_connection) The received block request's request index is wrong in case2
+(In handle_client_connection) From ('100.86.126.26', 29546), Received message: {'type': 'values', 'payload': 1}
+(In validate) receive message:{'type': 'values', 'payload': 1}
+(In validate) A valid block request received
+(In handle_client_connection) The received message is a block request
+(In handle_client_connection) the request index is 1, the agreed index is 1
+(In handle_client_connection) The received block request's request index is wrong in case2
