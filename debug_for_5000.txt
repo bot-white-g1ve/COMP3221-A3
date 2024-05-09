@@ -1,3 +1,60 @@
 (In start_server) Accepted connection from ('127.0.0.1', 64027)
 (In start_server) Accepted connection from ('127.0.0.1', 64029)
 (In start_server) Accepted connection from ('127.0.0.1', 64033)
+
+(In initializing) 2024-05-09 17:45:49.774764
+(In initializing) bind to port 5000
+(In main) node file is: [('127.0.0.1', 5001), ('127.0.0.1', 5002)]
+(In main) max failures allowed : 1
+(In initialize keypair) generates private and public bytes: b'[\xf3\x01\x02\xa1#\xc7\xebO?\x83!\x19\xc7\xb5\x82\x05\xcb\x85\xa7\x9f\xd6\x93\xac\xf0;N\xffj\x1e\xe2\xf6', b'\xd3)Y\xe7\x03\x1f>no\x8a@\x1e\x00\xaa\xae\x9d\xe7n\x9bl\x9by\xad\xe9\xed%=\xc1\xc4,\x97\xd9'
+(In initialize keypair) public key transformed to hex: d32959e7031f3e6e6f8a401e00aaae9de76e9b6c9b79ade9ed253dc1c42c97d9
+(In main) server start
+(In start_server) Server listening on host ('0.0.0.0', 5000)
+(In start_server) Accepted connection from ('127.0.0.1', 51354)
+(In manage_connection) Error connecting to 127.0.0.1:5002: [Errno 61] Connection refused
+(In start_server) Accepted connection from ('127.0.0.1', 51358)
+(In start_server) Accepted connection from ('127.0.0.1', 51460)
+(In handle_client_connection) From ('127.0.0.1', 51460), Received message: {'type': 'transaction', 'payload': {'sender': 'a57819938feb51bb3f923496c9dacde3e9f667b214a0fb1653b6bfc0f185363b', 'message': 'hello', 'nonce': 0, 'signature': '142e395895e0bf4e4a3a7c3aabf2f59d80c517d24bb2d98a1a24384bc7cb29c9d593ce3063c5dd4f12ae9393f3345174485c052d0f5e87c082f286fd60c7fd0c'}}
+(In validate) receive message:{'type': 'transaction', 'payload': {'sender': 'a57819938feb51bb3f923496c9dacde3e9f667b214a0fb1653b6bfc0f185363b', 'message': 'hello', 'nonce': 0, 'signature': '142e395895e0bf4e4a3a7c3aabf2f59d80c517d24bb2d98a1a24384bc7cb29c9d593ce3063c5dd4f12ae9393f3345174485c052d0f5e87c082f286fd60c7fd0c'}}
+(In validate) A valid transaction received
+(In handle_client_connection) The received message is a transaction
+(In handle_client_connection) Add to transaction pool: {'type': 'transaction', 'payload': {'sender': 'a57819938feb51bb3f923496c9dacde3e9f667b214a0fb1653b6bfc0f185363b', 'message': 'hello', 'nonce': 0, 'signature': '142e395895e0bf4e4a3a7c3aabf2f59d80c517d24bb2d98a1a24384bc7cb29c9d593ce3063c5dd4f12ae9393f3345174485c052d0f5e87c082f286fd60c7fd0c'}}
+(In handle_client_connection) current end of blcokchain: {'index': 0, 'transactions': [], 'previous_hash': '0000000000000000000000000000000000000000000000000000000000000000', 'current_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941'}
+(In consensus_pipeline) perform consensus as case 1: 
+(In broadcast_block_request) the timeout to a node is set to 5 sec
+(In broadcast_block_request) the timeout to a node is set to 5 sec
+(In perform_consensus) the timeout to a node is reset to inf
+(In perform_consensus) Received message: [{'index': 1, 'transactions': [], 'previous_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941', 'current_hash': 'f17b364e002a2cf69cf5ce700fa7e63274a61addff2748e893b83d6613e914e6'}]
+(In perform_consensus) the timeout to a node is reset to inf
+(In perform_consensus) Received message: [{'index': 1, 'transactions': [], 'previous_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941', 'current_hash': 'f17b364e002a2cf69cf5ce700fa7e63274a61addff2748e893b83d6613e914e6'}]
+(In broadcast_block_request) the timeout to a node is set to 5 sec
+(In broadcast_block_request) the timeout to a node is set to 5 sec
+(In perform_consensus) the timeout to a node is reset to inf
+(In perform_consensus) Received message: [{'index': 1, 'transactions': [], 'previous_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941', 'current_hash': 'f17b364e002a2cf69cf5ce700fa7e63274a61addff2748e893b83d6613e914e6'}]
+(In perform_consensus) the timeout to a node is reset to inf
+(In perform_consensus) Received message: [{'index': 1, 'transactions': [], 'previous_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941', 'current_hash': 'f17b364e002a2cf69cf5ce700fa7e63274a61addff2748e893b83d6613e914e6'}]
+(In perform_consensus) consensus value is [{'index': 1, 'transactions': [{'sender': 'a57819938feb51bb3f923496c9dacde3e9f667b214a0fb1653b6bfc0f185363b', 'message': 'hello', 'nonce': 0, 'signature': '142e395895e0bf4e4a3a7c3aabf2f59d80c517d24bb2d98a1a24384bc7cb29c9d593ce3063c5dd4f12ae9393f3345174485c052d0f5e87c082f286fd60c7fd0c'}], 'previous_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941', 'current_hash': '99d708e1c447bf022b1917ddd9416873d16b4797ad261dd66b1608d010f38dfb'}, {'index': 1, 'transactions': [], 'previous_hash': '3e84ae1bd33c5be169869f3c4ce425e51e4d9c41cff1b310ecf5b6d2e83c2941', 'current_hash': 'f17b364e002a2cf69cf5ce700fa7e63274a61addff2748e893b83d6613e914e6'}]
+(In handle_client_connection) From ('127.0.0.1', 51358), Received message: {'type': 'values', 'payload': 1}
+(In handle_client_connection) From ('127.0.0.1', 51354), Received message: {'type': 'values', 'payload': 1}
+(In validate) receive message:{'type': 'values', 'payload': 1}
+(In validate) receive message:{'type': 'values', 'payload': 1}
+(In validate) A valid block request received
+(In validate) A valid block request received
+(In handle_client_connection) The received message is a block request
+(In handle_client_connection) The received message is a block request
+(In handle_client_connection) the request index is 1, the agreed index is 1
+(In handle_client_connection) the request index is 1, the agreed index is 1
+(In handle_client_connection) The received block request's request index is wrong in case2
+(In handle_client_connection) The received block request's request index is wrong in case2
+(In handle_client_connection) From ('127.0.0.1', 51358), Received message: {'type': 'values', 'payload': 1}
+(In validate) receive message:{'type': 'values', 'payload': 1}
+(In validate) A valid block request received
+(In handle_client_connection) The received message is a block request
+(In handle_client_connection) From ('127.0.0.1', 51354), Received message: {'type': 'values', 'payload': 1}
+(In validate) receive message:{'type': 'values', 'payload': 1}
+(In validate) A valid block request received
+(In handle_client_connection) the request index is 1, the agreed index is 1
+(In handle_client_connection) The received message is a block request
+(In handle_client_connection) the request index is 1, the agreed index is 1
+(In handle_client_connection) The received block request's request index is wrong in case2
+(In handle_client_connection) The received block request's request index is wrong in case2

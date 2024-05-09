@@ -306,12 +306,24 @@ def broadcast_block_request(index):
                 msg_str = json.dumps(message)
                 msg_bytes = msg_str.encode('utf8')
                 network.send_prefixed(sock, msg_bytes)
-            except (socket.timeout, Exception) as e:
-                print(f"Error broadcasting message: {e}")
+            except (socket.timeout, socket.error) as e:
+                d_print("broadcast_block_request", "error, attempt reconnect")
+                attempt_reconnect(sock, msg_bytes)
 
-def attempt_reconnect(sock, ):
-    pass
-
+def attempt_reconnect(sock, msg_bytes):
+    try:
+        host, port = sock.getpeername()
+        host, port = sock.getpeername()
+        new_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        new_sock.connect((host, port))
+        new_sock.settimeout(5)
+        connections.remove(sock)
+        connections.append(new_sock)
+        network.send_prefixed(new_sock, msg_bytes)
+        d_print("attempt_reconnect", f"reconnection successful for {host}, {port}")
+    except (socket.timeout, socket.error) as e:
+        d_print("attempt_reconnect", f"reconnection failed for {host}, {port}")
+        connections.remove(new_sock)
 
 def reset_node_timeouts():
     """Reset timeouts for all active nodes."""
