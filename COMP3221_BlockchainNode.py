@@ -123,6 +123,7 @@ def handle_client_connection(client_socket):
                 client_socket.sendall(struct.pack("!H", len(response)) + response.encode())
                 
             elif response_validation == "valid block request":
+                print(f"[BLOCK] Received a block request from node {client_socket.getpeername()}: {message['payload']}")
       
                 request_index = message['payload']
                 agreement_index = bc.blockchain[-1]['index']
@@ -174,11 +175,9 @@ def handle_client_connection(client_socket):
 # Listening (server) socket
 def start_server(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
-        host_ip = socket.gethostbyname(socket.gethostname())
-        d_print("start_server", f"find host_ip being {host_ip}")
-        server_socket.bind((host_ip, port))
+        server_socket.bind(('0.0.0.0', port))
         server_socket.listen()
-        d_print("start_server", f"Server listening on host {host_ip}, port {port}")
+        d_print("start_server", f"Server listening on host {server_socket.getsockname()}")
         
         while True:
             client_socket, address = server_socket.accept()
@@ -230,6 +229,9 @@ def perform_consensus(proposed_block,index):
             message = conn.recv(2)
             if not message:
                 break
+                
+            conn.settimeout(None)
+            d_print("perform_consensus", "the timeout to a node is reset to inf")
 
             length = struct.unpack("!H", message)[0]
             message = network.recv_exact(conn,length)
@@ -247,7 +249,7 @@ def perform_consensus(proposed_block,index):
     # After f + 1 rounds, decide on the minimum value
     filtered_list = [item for item in consensus_values if item.get('transactions')]
     agreement = min(filtered_list, key=lambda x: x['current_hash'])
-    print(f"[CONSENSUS] Appended to the blockchain: {agreement['current_hash']}\n")
+    print(f"[CONSENSUS] Appended to the blockchain: {agreement['current_hash']}")
     bc.blockchain.append(agreement)
 
     # clear the consensus values 
@@ -297,13 +299,18 @@ def broadcast_block_request(index):
     with connections_lock:
         for sock in connections:
             try:
+                d_print("broadcast_block_request", "the timeout to a node is set to 5 sec")
+                sock.settimeout(5)
+
                 message = {"type": "values","payload":index }
                 msg_str = json.dumps(message)
                 msg_bytes = msg_str.encode('utf8')
                 network.send_prefixed(sock, msg_bytes)
-            except Exception as e:
+            except (socket.timeout, Exception) as e:
                 print(f"Error broadcasting message: {e}")
-            
+
+def attempt_reconnect(sock, ):
+    pass
 
 
 def reset_node_timeouts():
