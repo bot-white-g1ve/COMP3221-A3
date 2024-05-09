@@ -306,6 +306,7 @@ def broadcast_block_request(index):
                 msg_str = json.dumps(message)
                 msg_bytes = msg_str.encode('utf8')
                 network.send_prefixed(sock, msg_bytes)
+                d_print("broadcast_block_request", "broadcast success")
             except (socket.timeout, socket.error) as e:
                 d_print("broadcast_block_request", "error, attempt reconnect")
                 attempt_reconnect(sock, msg_bytes)
