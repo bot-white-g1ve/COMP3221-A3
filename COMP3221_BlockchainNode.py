@@ -168,7 +168,8 @@ def handle_client_connection(client_socket):
 
             elif response == "invalid block request":
                 pass
-
+    except Exception as e:
+        print(f"{client_socket.getpeername()} is down")
     finally:
         client_socket.close()
 
@@ -307,13 +308,12 @@ def broadcast_block_request(index):
                 msg_bytes = msg_str.encode('utf8')
                 network.send_prefixed(sock, msg_bytes)
                 d_print("broadcast_block_request", "broadcast success")
-            except (socket.timeout, socket.error) as e:
+            except Exception as e:
                 d_print("broadcast_block_request", "error, attempt reconnect")
                 attempt_reconnect(sock, msg_bytes)
 
 def attempt_reconnect(sock, msg_bytes):
     try:
-        host, port = sock.getpeername()
         host, port = sock.getpeername()
         new_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         new_sock.connect((host, port))
@@ -322,9 +322,12 @@ def attempt_reconnect(sock, msg_bytes):
         connections.append(new_sock)
         network.send_prefixed(new_sock, msg_bytes)
         d_print("attempt_reconnect", f"reconnection successful for {host}, {port}")
-    except (socket.timeout, socket.error) as e:
+    except Exception as e:
         d_print("attempt_reconnect", f"reconnection failed for {host}, {port}")
-        connections.remove(new_sock)
+        if new_sock in connections:
+            connections.remove(new_sock)
+        if sock in connections:
+            connections.remove(sock)
 
 def reset_node_timeouts():
     """Reset timeouts for all active nodes."""
