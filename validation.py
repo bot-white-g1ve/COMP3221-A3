@@ -2,14 +2,11 @@ from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
 import json
 from enum import Enum
-
-def d_print(func, str):
-    with open('debug.txt', 'a') as f:
-        f.write(f"(In {func}) {str}\n")
+from debug import d_print
 
 ValidationError = Enum('ValidationError', ['VALID_TRANSACTION', 'VALID_REQUEST', 'INVALID_JSON', 'INVALID_TYPE', 'INVALID_SENDER', 'INVALID_MESSAGE', 'INVALID_NONCE', 'INVALID_SIGNATURE', 'INVALID_VALUES'])
 
-def validate_transaction(payload):
+def validate_transaction(payload, sender_and_nonce):
     # Validate sender
     if not isinstance(payload["sender"], str) or len(payload["sender"]) != 64:
         return ValidationError.INVALID_SENDER
@@ -19,6 +16,15 @@ def validate_transaction(payload):
     # Validate nonce
     if not isinstance(payload["nonce"], int):
         return ValidationError.INVALID_NONCE
+    elif isinstance(payload["nonce"], int):
+        d_print("validate_transaction", "nonce is indeed an int")
+        sender = payload["sender"]
+        nonce = payload["nonce"]
+        if sender in sender_and_nonce and nonce != sender_and_nonce[sender]+1:
+            d_print("validate_transaction", f"the nonce recorded is {sender_and_nonce[sender]}, receive {nonce}")
+            return ValidationError.INVALID_NONCE
+        elif sender not in sender_and_nonce and nonce != 0:
+            return ValidationError.INVALID_NONCE
     # Validate signature
     if not isinstance(payload["signature"], str) or len(payload["signature"]) != 128:
         d_print("validation.validate_transaction", "the signature is not a valid string")
@@ -51,7 +57,7 @@ def validate_values(payload):
         return ValidationError.INVALID_VALUES
     return ValidationError.VALID_REQUEST
 
-def validate_message(message):
+def validate_message(message, sender_and_nonce):
     if not isinstance(message, dict):
         d_print("validation.validate_message", "The message is not a dictionary")
         return ValidationError.INVALID_JSON
@@ -65,7 +71,7 @@ def validate_message(message):
     if message_type not in ["transaction", "values"]:
         return ValidationError.INVALID_TYPE
     if message_type == "transaction":
-        return validate_transaction(payload)
+        return validate_transaction(payload, sender_and_nonce)
     elif message_type == "values":
         return validate_values(payload)
     

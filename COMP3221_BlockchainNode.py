@@ -50,7 +50,7 @@ def initialize_keypair():
 def validate(message):
     d_print("validate", f"receive message:{message}")
 
-    error = validation.validate_message(message)
+    error = validation.validate_message(message, sender_and_nonce)
     if  error == validation.ValidationError.INVALID_JSON:
         d_print("validate", "A message with wrong format received")
         return "wrong format"
@@ -75,7 +75,7 @@ def validate(message):
         return "invalid transaction"
     elif error == validation.ValidationError.INVALID_SIGNATURE:
         d_print("validate", "A transaction with wrong signature received")
-        print(f"[TX] Received an invalid transaction, wrong signature mssage - {message['payload']}")
+        print(f"[TX] Received an invalid transaction, wrong signature message - {message['payload']}")
         return "invalid transaction"
     
     if error == validation.ValidationError.VALID_REQUEST:
@@ -118,6 +118,11 @@ def handle_client_connection(client_socket):
                 print(f"[MEM] Stored transaction in the transaction pool: {message['payload']['signature']}")
                 d_print("handle_client_connection", f"current end of blcokchain: {bc.blockchain[-1]}")
                 
+                # update the nonce
+                d_print("handle_client_connection", f"call update_nonce")
+                update_nonce(message)
+                d_print("handle_client_connection", f"after updating, current record of sender: {sender_and_nonce}")
+                
             elif response_validation == "invalid transaction":
                 response = json.dumps({"response": False})
                 client_socket.sendall(struct.pack("!H", len(response)) + response.encode())
@@ -137,12 +142,12 @@ def handle_client_connection(client_socket):
                 # invalid index
                 if request_index < 0 or request_index > agreement_index+1:
                     proposal = {}
-                    d_print("handle_client_connection", f"The received block request's request index is wrong in case1")
+                    d_print("handle_client_connection", f"The received block request's request index is in case1")
                 
                 # index already agreed
                 elif request_index <= agreement_index:
                     proposal = [bc.blockchain[request_index]]
-                    d_print("handle_client_connection", f"The received block request's request index is wrong in case2")
+                    d_print("handle_client_connection", f"The received block request's request index is in case2")
 
                 # consensus process
                 elif request_index == agreement_index+1:
@@ -172,6 +177,17 @@ def handle_client_connection(client_socket):
         print(f"{client_socket.getpeername()} is down")
     finally:
         client_socket.close()
+
+# Update the nonce whenever receive a valid transaction
+def update_nonce(message):
+    sender = message['payload']['sender']
+    d_print("update_nonce", f"The sender is {sender}")
+    if sender in sender_and_nonce:
+        sender_and_nonce[sender] += 1
+        d_print("update_nonce", f"The sender has already sent previously, nonce incremented to {sender_and_nonce[sender]}")
+    elif sender not in sender_and_nonce:
+        sender_and_nonce[sender] = 0
+        d_print("update_nonce", f"The sender has not sent previously, nonce start at {sender_and_nonce[sender]}")
 
 # Listening (server) socket
 def start_server(port):
@@ -362,6 +378,7 @@ if __name__ == "__main__":
     consensus_routine = False
     consensus_values = []
     connections = []
+    sender_and_nonce = {}
     
     # initialize
     initialize_keypair()

@@ -38,3 +38,13 @@ def publickey_bytes_to_hex(public_key_bytes):
     ).hex()
 
     return public_key_hex
+
+def encrypt_with_privatekey(message_bytes, privatekey_bytes):
+    '''
+    Generate signature with private key
+    '''
+    # Load private key from bytes
+    private_key = ed25519.Ed25519PrivateKey.from_private_bytes(privatekey_bytes)
+
+    signature = private_key.sign(message_bytes)
+    return signature
