@@ -207,9 +207,11 @@ def manage_connection(host, port):
         sock = None
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            d_print("manage_connection", f"try to connect to {host}:{port}")
             sock.connect((host, port))
             with connections_lock:
                 connections.append(sock)
+            d_print("manage_connection", f"connect successfully to {host}:{port}")
             print(f"Connected to {host}:{port}")
             while True:
                 time.sleep(10)
