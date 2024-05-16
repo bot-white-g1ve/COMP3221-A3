@@ -179,7 +179,7 @@ def handle_client_connection(client_socket):
             elif response == "invalid block request":
                 pass
     except Exception as e:
-        print(f"{client_socket.getpeername()} is down")
+        print(f"one peer is down")
     finally:
         client_socket.close()
 
@@ -249,8 +249,8 @@ def perform_consensus(proposed_block,index):
         broadcast_block_request(index)
 
         # Receive values from other nodes
-        try:    
-            for conn in connections:
+        for conn in connections[:]:
+            try:    
                 message = conn.recv(2)
                 if not message:
                     break
@@ -267,8 +267,8 @@ def perform_consensus(proposed_block,index):
                 for block in message:
                     if block not in consensus_values:
                         consensus_values.append(block)
-        except Exception:
-            connections.remove(conn)
+            except Exception:
+                connections.remove(conn)
 
 
     d_print("perform_consensus", f"consensus value is {consensus_values}")
@@ -277,8 +277,12 @@ def perform_consensus(proposed_block,index):
     filtered_list = [item for item in consensus_values if item.get('transactions')]
     d_print("perform_consensus", f"the filtered_list is {filtered_list}")
     if not filtered_list:
+        print("Warning!!!!!!!!!!!!")
+        print(f"current index is {index}")
         filtered_list = [item for item in consensus_values]
     agreement = min(filtered_list, key=lambda x: x['current_hash'])
+
+    p
     print(f"[CONSENSUS] Appended to the blockchain: {agreement['current_hash']}")
     bc.blockchain.append(agreement)
 
