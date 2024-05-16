@@ -275,6 +275,9 @@ def perform_consensus(proposed_block,index):
 
     # After f + 1 rounds, decide on the minimum value
     filtered_list = [item for item in consensus_values if item.get('transactions')]
+    d_print("perform_consensus", f"the filtered_list is {filtered_list}")
+    if not filtered_list:
+        filtered_list = [item for item in consensus_values]
     agreement = min(filtered_list, key=lambda x: x['current_hash'])
     print(f"[CONSENSUS] Appended to the blockchain: {agreement['current_hash']}")
     bc.blockchain.append(agreement)
