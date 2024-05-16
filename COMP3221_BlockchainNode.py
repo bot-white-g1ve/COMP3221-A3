@@ -282,7 +282,7 @@ def perform_consensus(proposed_block,index):
         filtered_list = [item for item in consensus_values]
     agreement = min(filtered_list, key=lambda x: x['current_hash'])
 
-    p
+
     print(f"[CONSENSUS] Appended to the blockchain: {agreement['current_hash']}")
     bc.blockchain.append(agreement)
 
